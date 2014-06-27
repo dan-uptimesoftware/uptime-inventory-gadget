@@ -29,8 +29,8 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-		<title>Element Status Chart</title>
-		<link href="__UPTIME_GADGET_BASE__/elementStatus.css" type="text/css" rel="stylesheet" />
+		<title>Inventory Gadget</title>
+		
 
 		#includeResources(jquery,highcharts)
 		

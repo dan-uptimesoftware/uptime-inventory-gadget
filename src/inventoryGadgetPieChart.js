@@ -33,7 +33,13 @@ if (typeof UPTIME.InventoryGadgetPieChart == "undefined") {
             refreshInterval = options.refreshInterval;
         }
 
-
+        var seriesData = [{
+                        type: 'pie',
+                        name: 'Inventory',
+                        data: [
+                            
+                        ]
+                    }];
 
         var dataLabelsEnabled = false;
         var chart = new Highcharts.Chart({
@@ -44,7 +50,7 @@ if (typeof UPTIME.InventoryGadgetPieChart == "undefined") {
                         plotShadow: false
                     },
                     title: {
-                        text: 'Iventory Breakdown'
+                        text: 'Inventory Breakdown'
                     },
                     tooltip: {
                         pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
@@ -62,25 +68,51 @@ if (typeof UPTIME.InventoryGadgetPieChart == "undefined") {
                             }
                         }
                     },
-                    series: [{
-                        type: 'pie',
-                        name: 'Browser share',
-                        data: [
-                            ['Firefox',   45.0],
-                            ['IE',       26.8],
-                            {
-                                name: 'Chrome',
-                                y: 12.8,
-                                sliced: true,
-                                selected: true
-                            },
-                            ['Safari',    8.5],
-                            ['Opera',     6.2],
-                            ['Others',   0.7]
-                        ]
-                    }]
+                    series: seriesData
 
         });
+
+
+        function getIventory() {
+            api.getAllElements().then(
+                function(result) {
+                     var osCount = {
+                            'Windows' : 0,
+                            'Linux' : 0
+                        };
+                        var total = 0;
+                    $.each(result, function(index, element) {
+                        if (element.isMonitored) {
+                            if ( element.typeSubtype in osCount)
+                            {
+                                osCount[element.typeSubtype]++;
+                            }
+                            else
+                            {
+                                osCount[element.typeSubtype] = 1;
+                            }
+                            total++;
+                        }
+                    });
+
+                    
+
+                    var osPercentages = [];
+
+                    $.each( osCount, function(osType, count) {
+                        var prc = count / total;
+                        osPercentages.push( [ osType, prc]);
+                    });
+                    
+
+                    chart.addSeries({
+                        type: 'pie',
+                        name: 'Inventory',
+                        data: osPercentages
+                    } );
+                    chart.hideLoading();
+                });
+        }
 
         function requestData() {
             api.getElementStatus(elementId).then(
@@ -127,7 +159,7 @@ if (typeof UPTIME.InventoryGadgetPieChart == "undefined") {
                         displayStatusBar(error, "Error Loading Chart Data");
                     });
             if (refreshInterval > 0) {
-                chartTimer = setTimeout(requestData, refreshInterval * 1000);
+                chartTimer = setTimeout(getIventory, refreshInterval * 1000);
             }
         }
 
@@ -135,7 +167,7 @@ if (typeof UPTIME.InventoryGadgetPieChart == "undefined") {
         var publicFns = {
             render : function() {
                 chart.showLoading();
-                requestData();
+                getIventory();
             },
             resize : function(dimensions) {
                 chart.setSize(dimensions.width, dimensions.height);
